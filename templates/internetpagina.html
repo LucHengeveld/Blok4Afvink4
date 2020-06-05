@@ -2,19 +2,20 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>Afvink 3</title>
+        <title>Afvink 4</title>
     </head>
     <body>
-        <h2>Vul hieronder in wat je wilt opzoeken:</h2>
-        <form action="{{ url_for('database') }}" method="post">
-            <input type = "text" name= "zoek" />
-            <input type = "submit" value="Zoek in database" >
+        <h2>Vul hieronder een sequentie in om te kijken of het DNA, RNA, eiwit
+            of geen van drieën is:</h2>
+        <form action="{{ url_for('afvink4') }}" method="post">
+            <input type = "text" name= "sequentie" />
+            <input type = "submit" value="Check" >
         </form>
         <br><hr>
-        <p>{{ resultatentextrange }}</p>
-        {{ resultatentext }}<br>
-        {% for i in range(20) %}
-            {{ resultaten[i] }}<br>
-        {% endfor %}
+        {{ sequentie }}<br>
+        {{ resultatentext1 }}<br>
+        {{ resultatentext2 }}<br>
+        {{ resultatentext3 }}
+
     </body>
 </html>

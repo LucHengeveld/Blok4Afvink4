@@ -16,9 +16,22 @@ def afvink4():
     """
     if request.method == "POST":
 
-        # Gegevens uit textbox halen, dit in caps lock zetten en lengte
-        # van de ingevoerde sequentie berekenen.
+        # Gegevens uit textbox halen en dit in hoofdletters zetten.
         sequentie = request.form.get("sequentie", "").upper()
+
+        # Hieronder staat een test DNA sequentie. Om deze te gebruiken
+        # haal de 3 aanhalingstekens ervoor en erna weg of plaats dit in
+        # het tekstveld op de website.
+        """
+        sequentie = "GCCGGGGACATGCAGGTCATCGGCAACGACGTCTACGCCGTCGGATACCAGGGGC" \
+                    "GGGTCGTCGCCGTCGACTTGAACACCGGGCTCGTCCTGTGGACCCAGGACGCGTC" \
+                    "GTCGCTCGCCGGGCTCGGCGTCGATCAAGGCCGCGTCTACGTGACGACGGACGTC" \
+                    "GGCTACGTCCTCGCGCTCGCGCGCTCGAACGGCGCGCAGCAGTGGTCCCAGGAGG" \
+                    "CGCTGCGCCTGCGCGACGTCACCGCTCCGACGCCGTTCGGCAGCACCGTCGTCGT" \
+                    "CGGCGACCTCGAGGGTTACGTGCATT"
+        """
+
+        # Berekend de lengte van de sequentie.
         lengte_seq = len(sequentie)
 
         # Laat op de website zien welke sequentie is ingevoerd.
@@ -65,7 +78,7 @@ def afvink4():
                     'TCA': 'S', 'TCC': 'S', 'TCG': 'S', 'TCT': 'S',
                     'TTC': 'F', 'TTT': 'F', 'TTA': 'L', 'TTG': 'L',
                     'TAC': 'Y', 'TAT': 'Y', 'TAA': '_', 'TAG': '_',
-                    'TGC': 'C', 'TGT': 'C', 'TGA': '_', 'TGG': 'W',
+                    'TGC': 'C', 'TGT': 'C', 'TGA': '_', 'TGG': '_',
                 }
                 protein = ""
                 if len(sequentie) % 3 == 0:
@@ -76,30 +89,31 @@ def afvink4():
                 # Geeft de aminozuur sequentie door aan de html pagina.
                 resultatentext3 = "De bijbehorende aminozuur sequentie is: "\
                                   + protein
+
+                # Blast de protein sequentie tegen de protein database om het
+                # meest waarschijnlijke gen te vinden.
+                result_handle = NCBIWWW.qblast("blastp", "nr", protein,
+                                               hitlist_size=1)
+
+                # Schrijft de output van BLAST weg in XML bestand.
+                with open("XMLTest.xml", "w") as out_handle:
+                    out_handle.write(result_handle.read())
+
+                # Opent XML bestand en haalt hier de naam uit en geeft het
+                # door aan de html pagina.
+                result_handle = open("XMLTest.xml", "r")
+                blast_record = NCBIXML.read(result_handle)
+                for alignment in blast_record.alignments:
+                    resultatentext4 = "Het meest waarschijnlijke gen is: " + \
+                                      alignment.title
+
             else:
                 # Als de sequentie niet door 3 deelbaar is, komt dit op
                 # de website te staan
                 resultatentext3 = "De ingevoerde DNA sequentie is niet " \
                                   "deelbaar door 3. Hierdoor kunnen niet " \
                                   "alle nucleotiden worden vertaald naar " \
-                                  "aminozuren."
-
-            # Blast de RNA sequentie tegen de protein database om het
-            # meest waarschijnlijke gen te vinden.
-            result_handle = NCBIWWW.qblast("blastx", "nr", rna_seq,
-                                           hitlist_size=1)
-            # Schrijft de output van BLAST weg in XML bestand.
-            with open("XMLTest.xml", "w") as out_handle:
-                out_handle.write(result_handle.read())
-
-            # Opent XML bestand en haalt hier de naam uit en geeft het
-            # door aan de html pagina.
-            result_handle = open("XMLTest.xml", "w")
-            blast_record = NCBIXML.read(result_handle)
-            for alignment in blast_record.alignments:
-                resultatentext4 = "Het meest waarschijnlijke gen is: " + \
-                                  alignment.title
-                print(resultatentext4)
+                                  "aminozuren. De sequentie is niet geblast"
 
         else:
             # Kijkt of de sequentie RNA is als het geen DNA is.
